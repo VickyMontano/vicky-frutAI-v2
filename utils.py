@@ -28,9 +28,8 @@ def cargar_modelo(path_modelo, device):
     class_names = ['Anana', 'Banana', 'Coco', 'Frutilla', 'Higo',
                    'Manzana', 'Mora', 'Naranja', 'Palta', 'Pera']
 
-    # 📦 Descarga modelo si falta
-    descargar_si_falta("best_efficientnet_b3.pth", "https://www.dropbox.com/scl/fi/388szvivqt5wvyikqaacu/best_efficientnet_b3.pth?rlkey=7kovrt3pory53vf5jhvt821we&dl=1")
-
+    descargar_si_falta("best_efficientnet_b3.pth",
+        "https://huggingface.co/VickyMontano03/frutai-models/resolve/main/best_efficientnet_b3.pth")
 
     model = efficientnet_b3(weights=None)
     model.classifier[1] = nn.Sequential(
@@ -56,7 +55,8 @@ def segmentar_frutas(image_np, device):
     sam_checkpoint = "sam_vit_h_4b8939.pth"
     model_type = "vit_h"
 
-    descargar_si_falta("sam_vit_h_4b8939.pth", "https://www.dropbox.com/scl/fi/7bfw1asp3fczvcm0obtw5/sam_vit_h_4b8939.pth?rlkey=zmviu8ndokikntwtj481dcfmc&dl=1")
+    descargar_si_falta(sam_checkpoint,
+        "https://huggingface.co/VickyMontano03/frutai-models/resolve/main/sam_vit_h_4b8939.pth")
 
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     sam.to(device).eval()
@@ -126,7 +126,6 @@ def clasificar_imagen(image_np, boxes, model, transform, class_names, device):
             "bbox": (x1, y1, x2 - x1, y2 - y1)
         })
 
-    # 🧠 Una detección por clase (la más confiable)
     filtradas = []
     if len(detecciones) > 0:
         agrupadas = defaultdict(list)
