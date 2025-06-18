@@ -1,67 +1,65 @@
-# === /prod/app.py ===
-
 import streamlit as st
 import torch
 import numpy as np
 import cv2
 import os
 from PIL import Image, Image as PILImage
-from utils import cargar_modelo, segmentar_frutas, clasificar_imagen
+from utils import cargar_modelo, segmentar_frutas, clasificar_imagen, descargar_si_falta
 
-st.set_page_config(
-    page_title="FrutAI 🍍 | Grupo: Baladé-Montaño-Nuñez",
-    page_icon="🍓"
-)
+st.set_page_config(page_title="FrutAI 🍍", page_icon="🍓")
 
-# Estilos CSS personalizados
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-        color: #eee;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .main-container {
-        background: rgba(255, 255, 255, 0.12);
-        border-radius: 16px;
-        padding: 25px 40px 40px 40px;
-        box-shadow: 0 8px 32px 0 rgba(45, 60, 80, 0.37);
-        margin-bottom: 40px;
-    }
-    .description {
-        font-size: 1.25rem;
-        color: #d1c4e9;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    div.stButton > button {
-        background: #7e57c2;
-        color: white;
-        font-weight: bold;
-        border-radius: 10px;
-        padding: 10px 25px;
-        border: none;
-        box-shadow: 0 4px 15px #b39ddb;
-    }
-    div.stButton > button:hover {
-        background: #512da8;
-        box-shadow: 0 6px 20px #311b92;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
+# 🧠 Forzar CPU en Streamlit
 device = torch.device("cpu")
 
+# 📦 Descargar modelo si falta
+descargar_si_falta("best_efficientnet_b3.pth", "https://huggingface.co/VickyMontano03/frutai-models/resolve/main/best_efficientnet_b3.pth")
 
+# 🔍 Cargar modelo
 model, transform, class_names = cargar_modelo("best_efficientnet_b3.pth", device)
 
+# 🌈 Estilos visuales
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.main-container {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 25px 40px 40px 40px;
+    box-shadow: 0 8px 32px 0 rgba(45, 60, 80, 0.37);
+    margin-bottom: 40px;
+}
+.description {
+    font-size: 1.25rem;
+    color: #d1c4e9;
+    text-align: center;
+    margin-bottom: 30px;
+}
+div.stButton > button {
+    background: #7e57c2;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 10px 25px;
+    border: none;
+    box-shadow: 0 4px 15px #b39ddb;
+}
+div.stButton > button:hover {
+    background: #512da8;
+    box-shadow: 0 6px 20px #311b92;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 st.image("portada.jpg", use_container_width=True)
-st.markdown('<p class="description">Carga una imagen con frutas. Aguarda un instante y el sistema te dirá el nombre de las frutas.</p>', unsafe_allow_html=True)
+st.markdown('<p class="description">Cargá una imagen con frutas y detectamos y clasificamos automáticamente.</p>', unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("Subí una imagen de frutas o arrastrá una imagen", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("📤 Subí una imagen de frutas", type=["jpg", "jpeg", "png"])
+
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     image_np = np.array(image)
@@ -100,7 +98,7 @@ if uploaded_file:
             text_y = y_s + (h_s + text_h) // 2
             cv2.putText(image_final_resized, text, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
 
-        st.image(cv2.cvtColor(image_final_resized, cv2.COLOR_BGR2RGB), caption="Clasificación final")
+        st.image(cv2.cvtColor(image_final_resized, cv2.COLOR_BGR2RGB), caption="🍓 Clasificación final")
 
         # 🍍 Recetas
         recetariouno = {
