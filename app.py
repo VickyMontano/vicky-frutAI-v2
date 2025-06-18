@@ -53,7 +53,9 @@ st.markdown(
 
 device = torch.device("cpu")
 
+
 model, transform, class_names = cargar_modelo("best_efficientnet_b3.pth", device)
+
 
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 st.image("portada.jpg", use_container_width=True)
