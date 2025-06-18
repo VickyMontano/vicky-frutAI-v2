@@ -6,6 +6,10 @@ import os
 from PIL import Image, Image as PILImage
 from utils import cargar_modelo, segmentar_frutas, clasificar_imagen, descargar_si_falta
 
+
+st.write("🟢 App arrancó")
+
+
 st.set_page_config(page_title="FrutAI 🍍", page_icon="🍓")
 
 # 🧠 Forzar CPU en Streamlit
@@ -16,6 +20,9 @@ descargar_si_falta("best_efficientnet_b3.pth", "https://huggingface.co/VickyMont
 
 # 🔍 Cargar modelo
 model, transform, class_names = cargar_modelo("best_efficientnet_b3.pth", device)
+
+st.write("✅ Modelo cargado")
+
 
 # 🌈 Estilos visuales
 st.markdown("""
@@ -67,6 +74,9 @@ if uploaded_file:
 
     with st.spinner("🔍 Segmentando frutas..."):
         boxes = segmentar_frutas(image_np, device)
+
+        st.write("✂️ Segmentación terminada")
+
 
     with st.spinner("🧠 Clasificando frutas..."):
         resultados = clasificar_imagen(image_np, boxes, model, transform, class_names, device)
