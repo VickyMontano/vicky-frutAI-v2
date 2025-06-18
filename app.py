@@ -51,7 +51,8 @@ st.markdown(
     </style>
     """, unsafe_allow_html=True)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
+
 model, transform, class_names = cargar_modelo("best_efficientnet_b3.pth", device)
 
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
