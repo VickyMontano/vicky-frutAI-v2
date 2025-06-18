@@ -29,7 +29,8 @@ def cargar_modelo(path_modelo, device):
                    'Manzana', 'Mora', 'Naranja', 'Palta', 'Pera']
 
     # 📦 Descarga modelo si falta
-    descargar_si_falta(path_modelo, "https://drive.google.com/uc?export=download&id=1IhcexM0fnLqUCifSray8nmLoRnh3np-9")
+    descargar_si_falta("best_efficientnet_b3.pth", "https://www.dropbox.com/scl/fi/388szvivqt5wvyikqaacu/best_efficientnet_b3.pth?rlkey=7kovrt3pory53vf5jhvt821we&dl=1")
+
 
     model = efficientnet_b3(weights=None)
     model.classifier[1] = nn.Sequential(
@@ -55,7 +56,7 @@ def segmentar_frutas(image_np, device):
     sam_checkpoint = "sam_vit_h_4b8939.pth"
     model_type = "vit_h"
 
-    descargar_si_falta(sam_checkpoint, "https://drive.google.com/uc?export=download&id=1u6uWrhBJwuk3TrxDLaR64z9t6nOGQwGN")
+    descargar_si_falta("sam_vit_h_4b8939.pth", "https://www.dropbox.com/scl/fi/7bfw1asp3fczvcm0obtw5/sam_vit_h_4b8939.pth?rlkey=zmviu8ndokikntwtj481dcfmc&dl=1")
 
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     sam.to(device).eval()
