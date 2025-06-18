@@ -17,19 +17,10 @@ def descargar_si_falta(path_local, url):
         print(f"⏬ Descargando {path_local} desde la nube...")
         urllib.request.urlretrieve(url, path_local)
 
-# 🔍 Variables globales
-masks = []
-final_boxes = []
-detecciones = []
-filtradas = []
-
 # 🧠 Carga del modelo EfficientNet
 def cargar_modelo(path_modelo, device):
     class_names = ['Anana', 'Banana', 'Coco', 'Frutilla', 'Higo',
                    'Manzana', 'Mora', 'Naranja', 'Palta', 'Pera']
-
-    descargar_si_falta("best_efficientnet_b3.pth",
-        "https://huggingface.co/VickyMontano03/frutai-models/resolve/main/best_efficientnet_b3.pth")
 
     model = efficientnet_b3(weights=None)
     model.classifier[1] = nn.Sequential(
