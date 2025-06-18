@@ -8,16 +8,28 @@ import torch.nn as nn
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from collections import defaultdict
 import torchvision.ops as ops
+import urllib.request
+import os
 
+# 🔧 Descarga archivos solo si no existen
+def descargar_si_falta(path_local, url):
+    if not os.path.exists(path_local):
+        print(f"⏬ Descargando {path_local} desde la nube...")
+        urllib.request.urlretrieve(url, path_local)
 
+# 🔍 Variables globales
 masks = []
 final_boxes = []
 detecciones = []
 filtradas = []
 
+# 🧠 Carga del modelo EfficientNet
 def cargar_modelo(path_modelo, device):
     class_names = ['Anana', 'Banana', 'Coco', 'Frutilla', 'Higo',
                    'Manzana', 'Mora', 'Naranja', 'Palta', 'Pera']
+
+    # 📦 Descarga modelo si falta
+    descargar_si_falta(path_modelo, "https://drive.google.com/uc?export=download&id=1IhcexM0fnLqUCifSray8nmLoRnh3np-9")
 
     model = efficientnet_b3(weights=None)
     model.classifier[1] = nn.Sequential(
@@ -38,10 +50,12 @@ def cargar_modelo(path_modelo, device):
 
     return model, transform, class_names
 
-
+# 🧩 Segmentación con SAM
 def segmentar_frutas(image_np, device):
     sam_checkpoint = "sam_vit_h_4b8939.pth"
     model_type = "vit_h"
+
+    descargar_si_falta(sam_checkpoint, "https://drive.google.com/uc?export=download&id=1u6uWrhBJwuk3TrxDLaR64z9t6nOGQwGN")
 
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     sam.to(device).eval()
@@ -54,12 +68,11 @@ def segmentar_frutas(image_np, device):
         min_mask_region_area=10000,
         crop_n_layers=0
     )
+
     confidence_threshold = 0.9
     masks = mask_generator.generate(image_np)
 
-    boxes = []
-    scores = []
-
+    boxes, scores = [], []
     for mask in masks:
         seg = mask["segmentation"].astype(np.uint8)
         x, y, w, h = cv2.boundingRect(seg)
@@ -69,13 +82,11 @@ def segmentar_frutas(image_np, device):
     boxes_tensor = torch.tensor(boxes, dtype=torch.float32)
     scores_tensor = torch.tensor(scores, dtype=torch.float32)
     indices = ops.nms(boxes_tensor, scores_tensor, iou_threshold=0.5)
-    
+
     masks = [masks[i] for i in indices]
-    filtered_masks = [mask for mask in masks if mask["predicted_iou"] >=confidence_threshold]
-    print(f" Después del filtro quedan {len(filtered_masks)} máscaras.")
-    
-    # Filtramos por confianza
-    confidence_threshold = 0.9
+    filtered_masks = [mask for mask in masks if mask["predicted_iou"] >= confidence_threshold]
+    print(f"🔍 Después del filtro quedan {len(filtered_masks)} máscaras.")
+
     final_boxes = []
     for i in indices:
         if scores[i] >= confidence_threshold:
@@ -84,7 +95,7 @@ def segmentar_frutas(image_np, device):
 
     return final_boxes
 
-
+# 🍓 Clasificación de frutas por bounding boxes
 def clasificar_imagen(image_np, boxes, model, transform, class_names, device):
     detecciones = []
 
@@ -114,9 +125,9 @@ def clasificar_imagen(image_np, boxes, model, transform, class_names, device):
             "bbox": (x1, y1, x2 - x1, y2 - y1)
         })
 
-    # --- Filtrar: una detección por clase, la más confiable ---
+    # 🧠 Una detección por clase (la más confiable)
     filtradas = []
-    if len(detecciones)>0:
+    if len(detecciones) > 0:
         agrupadas = defaultdict(list)
         for d in detecciones:
             agrupadas[d["label"]].append(d)
